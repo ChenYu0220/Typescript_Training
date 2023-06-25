@@ -1,4 +1,5 @@
 # 实现数组的基本操作
+难度：simple
 ## 一、基本操作类型
 forEach、concat、copyWithin、filter、map、shift、unshift、reduce、reverse、flat、findIndex、find、some、sort、slice、split 等方法
 ## 二、各方法分析
