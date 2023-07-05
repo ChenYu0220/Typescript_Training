@@ -10,13 +10,12 @@ declare global {
         kShift():T | undefined;
         kUnshift(...items: T[]):number;
         kReduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
-        
-        kReverse():void;
-        kFlat():void;
-        kSome():void;
-        kSort():void;
-        kSlice():void;
-        kSplit():void;
+        kReverse():T[];
+        kFlat(depth?:number):T[];
+        kSome(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean;
+        kSort(compareFn?: (a: T, b: T) => number): this;
+        kSlice(start?: number, end?: number): T[];
+        kSplice(start: number, deleteCount?: number, ...items: T[]): T[];
     }
 }
 
@@ -36,10 +35,7 @@ Array.prototype.kForeach = function(callBack,thisArg){
 */
 Array.prototype.kConcat = function<T>(concatArr:T[]){
     let arr = this;
-    concatArr = [...concatArr] 
-    concatArr.kForeach((value=>{
-        arr.push(value)
-    }));
+    arr.push(...concatArr)
     return arr;
 }
 
@@ -160,51 +156,142 @@ Array.prototype.kShift = function<T>():T|undefined{
 }
 
 /**
-* @description 重写 unShift 方法 // TODO
+* @description 重写 unShift 方法
 */
 Array.prototype.kUnshift = function<T>(...items: T[]):number{
     let arr = this;
-    let result:T[] = [];
-    items.kForeach((value)=>{
-        result.push(value);
-    })
-    arr = result.kConcat(arr)
+    arr = items.kConcat(arr)
     return arr.length
 }
 
 /**
-* @deprecated 重写 reduce 方法 // TODO
+* @deprecated 重写 reduce 方法
 */
-Array.prototype.kReduce = function(){}
+Array.prototype.kReduce = function<T>(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T{
+    let arr = this;
+    let arrCopy = [...arr]
+    if(initialValue !== undefined){
+        arrCopy.kUnshift(initialValue)
+    }
+    let accumulator:T = arrCopy[0];
+    arrCopy.kForeach((value,index)=>{
+        accumulator = callbackfn(accumulator,value,index,arrCopy)
+    })
+    return accumulator
+}
 
 /**
-* @deprecated 重写 reverse 方法 // TODO
+* @deprecated 重写 reverse 方法
 */
-Array.prototype.kReverse = function(){}
+Array.prototype.kReverse = function<T>():T[]{
+    let arr = this;
+    let reservedArr:T[] = [];
+    let arrLength = arr.length;
+    for(let i = 0; i< arrLength; i++){
+        reservedArr.push(arr.pop())
+    }
+    arr = reservedArr
+    return arr
+}
 
 /**
-* @description 重写 flat 方法 // TODO
+* @description 重写 flat 方法
 */
-Array.prototype.kFlat = function(){}
+Array.prototype.kFlat = function<T>(depth:number = 1):T[]{
+    let arr = this;
+    let flattedArray:T[] = [];
+    for(const item of arr){
+        if(Array.isArray(item) && depth >0){
+            flattedArray.push(...item.kFlat(depth-1));
+        }else{
+            flattedArray.push(item);
+        }
+    }
+    return flattedArray;
+}
 
 /**
-* @description 重写 some 方法 // TODO
+* @description 重写 some 方法
 */
-Array.prototype.kSome = function(){}
+Array.prototype.kSome = function<T>(predicate: (value: T, index: number, array: T[]) => unknown, thisArg?: any): boolean{
+    let arr = this;
+    let result = false;
+    arr.kForeach((value,index)=>{
+        let tempResult = predicate(value,index,arr);
+        if(typeof tempResult !== "boolean" ){
+            tempResult = false;
+        }
+        result = result || tempResult as boolean;
+    })
+    return result
+}
 
 /**
 * @description 重写 sort 方法 // TODO
 */
-Array.prototype.kSort = function(){}
+Array.prototype.kSort = function<T>(compareFn?: (a: T, b: T) => number){
+    let arr = this;
+    arr.sort(compareFn);
+    return arr
+}
 
 /**
-* @description 重写 slice 方法 // TODO
+* @description 重写 slice 方法
 */
-Array.prototype.kSlice = function(){}
+Array.prototype.kSlice = function<T>(start?: number, end?: number): T[]{
+    let arr = this;
+    let arrLength = arr.length;
+    end = (end === undefined) ? arrLength : (end < 0 ? arrLength + end : end);
+    start = (start === undefined) ? 0 : (start <0 ? arrLength + start : start);
+    if(start > end){
+        return [];
+    }
+    let result:T[] = [];
+    for(let i = start; i<end; i++){
+        result.push(arr[i]);
+    }
+    return result;
+}
 
 /**
 * @description 重写 split 方法 // TODO
 */
-Array.prototype.kSplit = function(){}
+Array.prototype.kSplice = function<T>(start: number, deleteCount = 0, ...items: T[]): T[]{
+    let arr = this;
+    let arrLength = arr.length;
+    let deletedArr:T[] = []
+    if(start<0){
+        start = Math.max(length+start,0);
+    }
+    if(start > arrLength){
+        start = arrLength;
+    }
+    // 删除元素的数量
+    let deleteElementCount = Math.min(deleteCount || 0, arrLength - start);
+    // 备份删除元素
+    for(let i = 0; i<deleteElementCount; i++){
+        deletedArr.push(arr[start+i])
+    }
+    // 删除元素
+    let itemsToInsert = items || [];
+    let itemsCount = itemsToInsert.length;
+    let newArrLength = arrLength - deleteElementCount + itemsCount;
+    let newArray = new Array(newArrLength);
+    
+    for(let i = 0; i< start; i++){
+        newArray.push(arr[i]);
+    }
+    items.kForeach((value)=>{
+        newArray.push(value);
+    })
+    for(let i = start+deleteElementCount;i<arr.length;i++){
+        newArray.push(arr[i]);
+    }
+    arr.length = 0;
+    newArray.kForeach((value)=>{
+        arr.push(value)
+    })
+    return deletedArr
+}
 }
     

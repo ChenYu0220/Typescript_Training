@@ -1,4 +1,4 @@
-import { extendArrayProto } from "./Extend";
+import { extendArrayProto } from "./ArrayExtend";
 
 extendArrayProto()
 
@@ -10,5 +10,8 @@ testArray.kForeach(function(value:number){
 })
 
 console.log("====");
-console.log("Below are the result of kCopyWith:");
-testArray.reduce
+console.log("Below are the result of kCopyWithin:");
+let a = [4,5]
+console.log(testArray.kConcat(a))
+
+testArray.splice
