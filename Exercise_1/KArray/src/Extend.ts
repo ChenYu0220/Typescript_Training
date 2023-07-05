@@ -1,16 +1,16 @@
 declare global {
     interface Array<T>{
         kForeach(callBack:(value:T,index:number,array:T[])=>void,thisArg?:any):void;
-        kConcat(arr1:T[],arr2:T[]):T[];
-        kCopyWithin():T[];
+        kConcat(concatArr:T[]):T[];
+        kCopyWithin(target: number, start?: number, end?: number): this;
         kFilter(callBack:(value:T,index:number,array:T[])=>boolean,thisArg?:any):T[];
         kMap<U>(callBack:(value:T,index?:number,array?:T[])=>U,thisArg?:any):U[];
         kFindIndex(predicate:(value:T,index:number,obj:T[])=>boolean,thisArg?:any):number;
         kFind(predicate:(value:T,index:number,obj:Array<T>)=>boolean,thisArg?:any):T|undefined;
+        kShift():T | undefined;
+        kUnshift(...items: T[]):number;
+        kReduce(callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) => T, initialValue?: T): T;
         
-        kShift():void;
-        kUnshift():void;
-        kReduce(callBack:(previousValue:T,currentValue:T,currentIndex:number,array:T[])=>T):T;
         kReverse():void;
         kFlat():void;
         kSome():void;
@@ -34,20 +34,47 @@ Array.prototype.kForeach = function(callBack,thisArg){
 /**
 * @description 重写 concat 方法
 */
-Array.prototype.kConcat = function<T>(arr1:T[],arr2:T[]){
-    let result1 = [...arr1,...arr2] // 方法一
-    let result2 = [...arr1] // 方法二
-    arr2.kForeach((value=>{
-        result2.push(value)
+Array.prototype.kConcat = function<T>(concatArr:T[]){
+    let arr = this;
+    concatArr = [...concatArr] 
+    concatArr.kForeach((value=>{
+        arr.push(value)
     }));
-    return [...arr1,...arr2];
+    return arr;
 }
 
 /**
 * @description 重写 copyWith 方法
 */
-Array.prototype.kCopyWithin = function(){
-    return [...this];
+Array.prototype.kCopyWithin = function(target: number, start?: number, end?: number){
+    let arr = this;
+    let arrLength = arr.length;
+    target = target >0 ? target : target + arrLength;
+    if(target > arrLength){
+        return arr
+    }
+    if(end === undefined){
+        end = arrLength
+    }
+    if(start === undefined){
+        start = 0
+    }
+    else {
+        start = start <= 0 ? 0 : Math.max(start,arrLength);
+    }
+    end = end ?? arrLength;
+    if(start >= end){
+        return arr;
+    }
+    let section = []
+    let sectionLength = end - start;
+    for(let i = 0; i< sectionLength; i++){
+        section.push(arr[start+i]);
+    }
+    for (let i = 0; i<sectionLength; i++){
+        arr[target+i] = section[i]
+    }
+    return arr;
 };
 
 /**
@@ -118,14 +145,32 @@ Array.prototype.kFind = function<T>(predicate:(value:T,index:number,obj:T[])=>bo
 }
 
 /**
-* @description 重写 shift 方法 // TODO
+* @description 重写 shift 方法
 */
-Array.prototype.kShift = function(){}
+Array.prototype.kShift = function<T>():T|undefined{
+    let arr = this;
+    if(arr.length <=0){
+        return
+    }
+    let firstElement = arr[0];
+    arr = arr.kFilter((_element,index)=>
+        index !== 0
+    )
+    return firstElement
+}
 
 /**
 * @description 重写 unShift 方法 // TODO
 */
-Array.prototype.kUnshift = function(){}
+Array.prototype.kUnshift = function<T>(...items: T[]):number{
+    let arr = this;
+    let result:T[] = [];
+    items.kForeach((value)=>{
+        result.push(value);
+    })
+    arr = result.kConcat(arr)
+    return arr.length
+}
 
 /**
 * @deprecated 重写 reduce 方法 // TODO

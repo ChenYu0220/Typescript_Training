@@ -23,3 +23,13 @@ forEach、concat、copyWithin、filter、map、shift、unshift、reduce、revers
 - thisArg：可选。对象作为该执行回调时使用，传递给函数，用作 “this” 的值。如果省略了 thisArg，则使用全局对象。
 
 与JavaScript中的map方法相比，TypeScript中的map方法多了一个类型参数T和U，用于指定数组中元素的类型和返回值的类型。
+
+### **CopyWithin**
+其中的 start 参数在 lib.es2015.core.d.ts 中描述如下
+
+    @param start If start is negative, it is treated as length+start. If end is negative, it is treated as length+end. If start is omitted, `0` is used.
+
+在理解上遇到一些问题，这三个 if 的优先级如何，在考证和学习之后得出的结论如下
+
+如果忽略了 start 参数，将会使用默认值 0， 当 start 参数为负数时，他会被视为 length+start; 这意味着可以通过传递附属来制定数组末尾开始计算的索引位置。
+当 end 参数为负数时，它将被解释为 length+end。这意味着可以使用附属指定相对于数组末尾开始计算索引位置。
