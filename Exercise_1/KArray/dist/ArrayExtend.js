@@ -220,7 +220,7 @@ function extendArrayProto() {
         return result;
     };
     /**
-    * @description 重写 split 方法 // TODO
+    * @description 重写 split 方法
     */
     Array.prototype.kSplice = function (start, deleteCount = 0, ...items) {
         let arr = this;

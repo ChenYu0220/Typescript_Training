@@ -254,7 +254,7 @@ Array.prototype.kSlice = function<T>(start?: number, end?: number): T[]{
 }
 
 /**
-* @description 重写 split 方法 // TODO
+* @description 重写 split 方法
 */
 Array.prototype.kSplice = function<T>(start: number, deleteCount = 0, ...items: T[]): T[]{
     let arr = this;
