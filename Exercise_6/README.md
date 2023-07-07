@@ -9,4 +9,4 @@ type Fruit = 'apple' | 'banana' | 'orange';
 type Fruits = ['apple', 'banana', 'orange', 'cherry'];
 type OnlyFruits = Filter<Fruits, Fruit>; // ['apple', 'banana', 'orange']
 ```
-遍历 Object 和 递归方式两种"
+遍历 Object 和 递归方式两种
