@@ -1,9 +1,11 @@
 import { DeepReadonly } from "./DeepReadonly";
+import { Person } from "./Person";
 
-interface Person {
-    name: string;
-    address: {
-      city: string;
-    };
-  }
+
   type ReadonlyPerson = DeepReadonly<Person>;
+
+  let a: ReadonlyPerson = {name: "123", address:{city: "456"}};
+
+//   a.name = "abc" // 报错
+
+  console.log(a)
