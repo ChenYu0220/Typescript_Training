@@ -68,7 +68,9 @@ Array.prototype.kCopyWithin = function(target: number, start?: number, end?: num
         section.push(arr[start+i]);
     }
     for (let i = 0; i<sectionLength; i++){
-        arr[target+i] = section[i]
+        if(i+target<arrLength){
+            arr[target+i] = section[i]
+        }
     }
     return arr;
 };
